@@ -1,0 +1,21 @@
+{% extends "admin/change_form.html" %}
+
+{% block object-tools %}
+{{ block.super }}
+
+{% if original and original.id and status != 'DRAFT' %}
+<div class="submit-row" style="display: flex; flex-direction: column; gap: 10px; padding-top: 15px;">
+    <input type="submit" value="Регистрация" class="btn btn-success form-control"
+           formaction="{% url 'admin:register_edition_admin' id=original.id %}">
+</div>
+{% endif %}
+
+<div class="submit-row" style="display: flex; flex-direction: column; gap: 10px; padding-top: 15px;">
+    <a href="{% url 'admin:klib_baseorder_add' %}?draft=True">
+        <button type="submit" class="btn btn-success form-control" name="save_draft">
+            Сохранить как черновик
+        </button>
+    </a>
+</div>
+
+{% endblock %}

@@ -1,0 +1,15 @@
+{% extends "admin/change_form.html" %}
+{% load static %}
+
+{% block admin_change_form_document_ready %}
+{{ block.super }}
+<script type="text/javascript">
+    console.log('Admin change form loaded');
+    // Вызываем функцию инициализации напрямую
+    if (typeof initializeBelmarcAdmin === 'function') {
+        initializeBelmarcAdmin();
+    } else {
+        console.error('initializeBelmarcAdmin is not defined');
+    }
+</script>
+{% endblock %}

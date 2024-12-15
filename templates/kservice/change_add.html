@@ -1,0 +1,323 @@
+{% extends 'admin/change_form.html' %}
+{% load i18n admin_urls static admin_modify %}
+
+{% block submit_buttons_bottom %}
+    {% if related_items.status_user == 'Ожидание' %}
+    <div class="submit-row" style="display: flex; flex-direction: column; gap: 10px; padding-top: 15px;">
+        <button id="sendButton" class="btn btn-success form-control">
+            Отправить
+        </button>
+    </div>
+    {% endif %}
+
+    <div class="submit-row" style="display: flex; flex-direction: column; gap: 14px; padding-top: 15px;">
+            <button type="submit" class="btn btn-success form-control" name="_save"
+                    value="Сохранить">
+                Сохранить
+            </button>
+    {% if original %}
+            <a href="{% url 'admin:kservice_add_delete' original.id %}" class="btn btn-danger form-control">
+                Удалить
+            </a>
+    {% endif %}
+    </div>
+
+    <!-- Модальное окно для отправки файла -->
+    <div id="sendModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Отправка файла</h2>
+                <span class="close">&times;</span>
+            </div>
+            <div class="modal-body">
+                <form id="sendForm" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <p>Выберите файл для отправки:</p>
+                    <input type="file" id="fileInput" class="form-control" required>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button id="confirmSendButton" class="btn btn-primary">Отправить</button>
+                <button id="cancelButton" class="btn btn-secondary">Отмена</button>
+            </div>
+        </div>
+    </div>
+
+    {% if related_items.status_user == 'Ожидание' %}
+    <div class="submit-row" style="display: flex; flex-direction: column; gap: 10px; padding-top: 15px;">
+        <button id="rejectButton" class="btn btn-danger form-control">
+            Отменить
+        </button>
+    </div>
+    {% endif %}
+
+    <!-- Модальное окно для отправки файла -->
+    <div id="rejectModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Отмена ADD</h2>
+                <span class="close">&times;</span>
+            </div>
+            <div class="modal-body">
+                <form id="sendForm" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <p>Введите причину отмены:</p>
+                    <input type="text" id="noteInput" class="form-control" required>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button id="confirmRejectButton" class="btn btn-primary">Отменить</button>
+                <button id="cancelRejectButton" class="btn btn-secondary">Отмена</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Добавьте после модального окна -->
+    <div id="notification" class="notification" style="display: none;">
+        <span id="notificationMessage"></span>
+    </div>
+
+    <style>
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0,0,0,0.5);
+    }
+
+    .modal-content {
+        background-color: #fefefe;
+        margin: 15% auto;
+        padding: 20px;
+        border: 1px solid #888;
+        width: 50%;
+        border-radius: 5px;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+
+    .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid #ddd;
+        padding-bottom: 10px;
+        margin-bottom: 20px;
+    }
+
+    .modal-header h2 {
+        margin: 0;
+        font-size: 1.5em;
+    }
+
+    .close {
+        color: #aaa;
+        font-size: 28px;
+        font-weight: bold;
+        cursor: pointer;
+    }
+
+    .close:hover {
+        color: black;
+    }
+
+    .modal-body {
+        margin-bottom: 20px;
+    }
+
+    .modal-footer {
+        border-top: 1px solid #ddd;
+        padding-top: 15px;
+        text-align: right;
+    }
+
+    .modal-footer button {
+        margin-left: 10px;
+    }
+
+    .notification {
+        display: none;
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 15px 25px;
+        border-radius: 4px;
+        z-index: 1001;
+        animation: slideIn 0.5s ease-in-out;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
+
+    .notification.success {
+        background-color: #4CAF50;
+        color: white;
+    }
+
+    .notification.error {
+        background-color: #f44336;
+        color: white;
+    }
+
+    @keyframes slideIn {
+        from {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
+    }
+    </style>
+
+    <script>
+    django.jQuery(document).ready(function($) {
+        var modal = document.getElementById("sendModal");
+        var btn = document.getElementById("sendButton");
+        var span = document.getElementsByClassName("close")[0];
+        var cancelBtn = document.getElementById("cancelButton");
+        var confirmBtn = document.getElementById("confirmSendButton");
+        
+        btn.onclick = function(e) {
+            e.preventDefault();
+            modal.style.display = "block";
+        }
+        
+        span.onclick = function() {
+            modal.style.display = "none";
+        }
+        
+        cancelBtn.onclick = function() {
+            modal.style.display = "none";
+        }
+        
+        window.onclick = function(event) {
+            if (event.target == modal) {
+                modal.style.display = "none";
+            }
+        }
+        
+        function showNotification(message, type) {
+            var notification = $('#notification');
+            $('#notificationMessage').text(message);
+            notification
+                .removeClass('success error')
+                .addClass(type)
+                .show();
+            
+            setTimeout(function() {
+                notification.fadeOut();
+            }, 3000);
+        }
+        
+        confirmBtn.onclick = function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            var fileInput = document.getElementById('fileInput');
+            var file = fileInput.files[0];
+            
+            if (!file) {
+                showNotification('Пожалуйста, выберите файл', 'error');
+                return;
+            }
+            
+            var formData = new FormData();
+            formData.append('file', file);
+            formData.append('csrfmiddlewaretoken', $('[name=csrfmiddlewaretoken]').val());
+            
+            $.ajax({
+                url: '{% url "send_add" add_id=original.pk %}',
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function(response) {
+                    if (response.success) {
+                        showNotification('Файл успешно отправлен', 'success');
+                        modal.style.display = "none";
+                    } else {
+                        showNotification(response.message || 'Произошла ошибка при отправке', 'error');
+                    }
+                },
+                error: function() {
+                    showNotification('Произошла ошибка при отправке файла', 'error');
+                }
+            });
+            
+            return false;
+        }
+
+        // Добавляем обработчики для модального окна отмены
+        var rejectModal = document.getElementById("rejectModal");
+        var rejectBtn = document.getElementById("rejectButton");
+        var rejectSpan = rejectModal.getElementsByClassName("close")[0];
+        var cancelRejectBtn = document.getElementById("cancelRejectButton");
+        var confirmRejectBtn = document.getElementById("confirmRejectButton");
+        
+        rejectBtn.onclick = function(e) {
+            e.preventDefault();
+            rejectModal.style.display = "block";
+        }
+        
+        rejectSpan.onclick = function() {
+            rejectModal.style.display = "none";
+        }
+        
+        cancelRejectBtn.onclick = function() {
+            rejectModal.style.display = "none";
+        }
+        
+        window.onclick = function(event) {
+            if (event.target == rejectModal) {
+                rejectModal.style.display = "none";
+            }
+            if (event.target == modal) {
+                modal.style.display = "none";
+            }
+        }
+        
+        confirmRejectBtn.onclick = function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            var noteInput = document.getElementById('noteInput');
+            var note = noteInput.value;
+            
+            if (!note) {
+                showNotification('Пожалуйста, введите причину отмены', 'error');
+                return;
+            }
+            
+            var formData = new FormData();
+            formData.append('note', note);
+            formData.append('csrfmiddlewaretoken', $('[name=csrfmiddlewaretoken]').val());
+            
+            $.ajax({
+                url: '{% url "reject_add" add_id=original.pk %}',
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function(response) {
+                    if (response.success) {
+                        showNotification('ADD успешно отменен', 'success');
+                        rejectModal.style.display = "none";
+                        window.location.reload();
+                    } else {
+                        showNotification(response.message || 'Произошла ошибка при отмене', 'error');
+                    }
+                },
+                error: function() {
+                    showNotification('Произошла ошибка при отмене ADD', 'error');
+                }
+            });
+            
+            return false;
+        }
+    });
+    </script>
+{% endblock %}
+

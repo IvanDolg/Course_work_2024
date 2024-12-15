@@ -1,0 +1,18 @@
+{% extends "admin/change_form.html" %}
+
+{% block submit_buttons_bottom %}
+    {% if original and original.id %}
+        <div class="submit-row" style="display: flex; flex-direction: column; gap: 10px; padding-top: 15px;">
+            <input type="submit" value="Выдать издания" class="btn btn-success form-control"
+                   formaction="{% url 'admin:add_circulation_admin' object_id=original.id %}">
+            <div class="submit-row" style="display: flex; flex-direction: column; gap: 10px; padding-top: 15px;">
+                <input type="submit" value="Отменить заказ" class="btn btn-success form-control"
+                       formaction="{% url 'admin:cancel_order_admin' object_id=original.id %}">
+            </div>
+            {% if original.status == 'собран' %}
+                <input type="submit" value="Продлить" class="btn btn-success form-control"
+                       formaction="{% url 'admin:extend_order_admin' object_id=original.id %}">
+            {% endif %}
+        </div>
+    {% endif %}
+{% endblock %}

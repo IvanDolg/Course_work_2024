@@ -1,0 +1,79 @@
+{
+  "mappings": {
+    "properties": {
+      "id": {
+        "type": "long"
+      },
+      "type": {
+        "type": "keyword"
+      },
+      "subtype": {
+        "type": "keyword"
+      },
+      "database": {
+        "type": "keyword"
+      },
+      "title": {
+        "type": "text"
+      },
+      "note": {
+        "type": "text"
+      },
+      "international_number": {
+        "type": "text"
+      },
+      "index": {
+        "type": "text"
+      },
+      "document_number": {
+        "type": "text"
+      },
+      "responsibility_info": {
+        "type": "text"
+      },
+      "parallel_title": {
+        "type": "text"
+      },
+      "designation": {
+        "type": "text"
+      },
+      "title_info": {
+        "type": "text"
+      },
+      "part_number": {
+        "type": "text"
+      },
+      "part_name": {
+        "type": "text"
+      },
+      "author": {
+        "type": "text"
+      },
+      "place_of_publication": {
+        "type": "text"
+      },
+      "publisher": {
+        "type": "text"
+      },
+      "date_of_publication": {
+        "type": "date"
+      },
+      "series_title": {
+        "type": "text"
+      },
+      "edition_info": {
+        "type": "text"
+      },
+      "volume": {
+        "type": "text"
+      },
+      "information_carrier": {
+        "type": "text"
+      }
+    }
+  },
+  "settings": {
+    "number_of_shards": 1,
+    "number_of_replicas": 1
+  }
+}

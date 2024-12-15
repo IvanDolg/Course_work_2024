@@ -1,0 +1,12 @@
+{% extends "admin/change_form.html" %}
+
+{% block content %}
+    {{ block.super }}
+
+    <h3>Выбранные элементы для списания:</h3>
+    <ul>
+        {% for element in elements_data %}
+            <li>Инвентарный номер: {{ element.inventory_number }} | Подтип издания: {{ element.arrival.order_edition.edition.edition_subtype }}</li>
+        {% endfor %}
+    </ul>
+{% endblock %}

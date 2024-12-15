@@ -1,0 +1,9 @@
+{
+  "id": 4,
+  "type": "PERIODICAL",
+  "subtype": "MAGAZINES",
+  "database": "database 2",
+  "title": "Advances in Quantum Computing",
+  "date_of_publication": "2007-01-01",
+  "note": "Recent breakthroughs in the field of quantum computing."
+}

@@ -1,0 +1,17 @@
+{% extends "admin/change_form.html" %}
+
+{% block object-tools %}
+{{ block.super }}
+{% if original and original.is_published == False %}
+    <div class="submit-row" style="display: flex; flex-direction: column; gap: 10px; padding-top: 15px;">
+        <input type="submit" value="Опубликовать" class="btn btn-success form-control"
+            formaction="{% url "admin:publish" object_id=original.id  %}">
+    </div>
+{% endif %}
+{% if original %}
+    <div class="submit-row" style="display: flex; flex-direction: column; gap: 10px; padding-top: 15px;">
+        <input type="submit" value="Создать запись на основании текущей" class="btn btn-success form-control"
+            formaction="{% url "admin:create_copy" object_id=original.id  %}">
+    </div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,201 @@
+{% extends "admin/login_parent.html" %} 
+{% load static %}
+
+<html lang="ru">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Аутентификация</title>
+		<link
+			href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+			rel="stylesheet"
+		/>
+		<link
+			href="{% static 'autocompleter/select2/css/select2.min.css' %}"
+			rel="stylesheet"
+		/>
+		{% block extrahead %} {{ block.super }}
+		<style>
+			body {
+				background-image: url("{% static 'img/background.png' %}");
+				background-size: cover;
+				background-position: center;
+				background-repeat: no-repeat;
+				background-color: #f0f2f5;
+
+				&.jazzmin-login-page {
+					position: absolute;
+					right: 1px;
+					background-color: #f0f2f5;
+					width: 50%;
+				}
+			}
+
+			.auth-container {
+				min-height: 60vh;
+				display: flex;
+				justify-content: center;
+				align-items: center;
+			}
+
+			.auth-block {
+				width: 100%;
+				padding-top: 20px;
+				padding-bottom: 20px;
+			}
+
+			.auth-content {
+				display: flex;
+				flex-direction: column;
+				padding: 20px;
+			}
+
+			.logo-container {
+				text-align: center;
+				margin-bottom: 20px;
+			}
+
+			.hidden {
+				display: none;
+			}
+
+			.btn-switch-container {
+				display: flex;
+				justify-content: space-between;
+				margin-bottom: 20px;
+				background-color: #eeeeee;
+				border-radius: 5px;
+				padding: 6px;
+			}
+
+			.btn-switch {
+				width: 200px;
+				padding: 6px;
+				font-size: 16px;
+				color: #000000;
+				border-radius: 5px;
+				border: 1px solid #d7d7d7;
+				text-decoration: none;
+				text-align: center;
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				transition: background-color 0.3s ease;
+				cursor: pointer;
+			}
+
+			.btn-switch:hover {
+				background-color: #ffffff;
+				color: #000000;
+				font-weight: bold;
+				transition: background-color 0.3s ease;
+			}
+
+			.form-container {
+				max-height: 400px;
+				overflow-y: auto;
+			}
+
+			input,
+			select {
+				margin-bottom: 15px;
+				width: 100%;
+				padding: 10px;
+				border: 1px solid #ccc;
+				border-radius: 5px;
+			}
+
+			button {
+				padding: 10px;
+				width: 100%;
+				background-color: #007bff;
+				color: white;
+				border: none;
+				border-radius: 5px;
+				cursor: pointer;
+			}
+
+			button:hover {
+				background-color: #0056b3;
+			}
+
+			.forgot-password {
+				text-align: center;
+				margin-top: 10px;
+				font-size: 14px;
+				color: #0056b3;
+				cursor: pointer;
+			}
+
+			.forgot-password:hover {
+				text-decoration: underline;
+			}
+
+			.link-text {
+				color: #007bff;
+				text-decoration: none;
+				font-size: 14px;
+			}
+
+			.link-text:hover {
+				text-decoration: underline;
+			}
+
+			h1 {
+				display: none;
+			}
+
+			.logo-top {
+				display: none;
+			}
+
+			.errorlist {
+				color: red;
+			}
+
+			.form-label {
+				color: #51565b;
+			}
+
+			@media (max-width: 768px) {
+				.auth-container {
+					justify-content: center;
+					padding-right: 0;
+				}
+			}
+		</style>
+		{% endblock %}
+	</head>
+
+	{% block content %}
+	<body>
+		<div class="auth-container">
+			<div id="auth-login" class="auth-block">
+				<div class="logo-container">
+					<img
+						src="{% static 'img/logo.png' %}"
+						alt="Логотип"
+						class="login-logo"
+					/>
+				</div>
+				<div class="auth-content">
+					<div class="btn-switch-container">
+						<a class="btn-switch" href="{% url 'login' %}">Вход</a>
+						<a class="btn-switch" href="{% url 'register' %}">Регистрация</a>
+					</div>
+
+					{{ block.super }}
+					<a
+						href="{% url 'update_password' %}"
+						class="forgot-password link-text"
+						>Забыли пароль?</a
+					>
+				</div>
+			</div>
+		</div>
+
+		<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+		<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+	</body>
+	{% endblock %}
+</html>

@@ -1,0 +1,10 @@
+{% extends "admin/change_form.html" %}
+
+{% block submit_buttons_bottom %}
+    {{ block.super }}
+    {% if not original %}
+        <input type="submit" value="Сохранить как черновик" class="btn btn-success form-control"
+               formaction="{% url 'admin:save-as-draft-non' %}">
+    {% endif %}
+{% endblock %}
+

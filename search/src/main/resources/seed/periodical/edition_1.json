@@ -1,0 +1,9 @@
+{
+  "id": 1,
+  "type": "PERIODICAL",
+  "subtype": "MAGAZINES",
+  "database": "database 1",
+  "title": "Optimizing Elasticsearch Performance",
+  "date_of_publication": "2023-01-01",
+  "note": "Something about optimization of performance in elasticsearch."
+}

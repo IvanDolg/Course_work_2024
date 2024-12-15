@@ -1,0 +1,130 @@
+{% extends "admin/base_site.html" %}
+{% load i18n static jazzmin %}
+{% get_jazzmin_ui_tweaks as jazzmin_ui %}
+
+{% block extrahead %}
+    {{ block.super }}
+    <link rel="stylesheet" type="text/css" href="{% static 'css/main.css' %}">
+{% endblock %}
+
+{% block bodyclass %}{{ block.super }} dashboard{% endblock %}
+
+{% block content_title %}  {% endblock %}
+
+{% block breadcrumbs %}
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'admin:index' %}">{% trans 'Home' %}</a></li>
+        <li class="breadcrumb-item"></li>
+    </ol>
+{% endblock %}
+
+
+{% block content %}
+
+<div class="main">
+    <div class="headline__wrapper">
+        <h2 class="headline">Настройки</h2>
+    </div>
+    <section>
+        <div id="settings-title" class="title__wrapper">
+            <h3 class="title">Основная информация</h3>
+        </div>
+     
+        <ul id="list-info" class="list"></ul>
+    </section>
+    <section>
+        <div class="title__wrapper">
+            <h3 class="title-auth">Данные авторизации</h3>
+        </div>
+        <ul id="list-auth" class="list"></ul>
+    </section>
+</div>
+
+<div class="overlay drawer__overlay"></div>
+<div id="drawer__settings" class="drawer__settings">
+  <div class="drawer__wrapper">
+    <div class="drawer__content flex column">
+      <div class="modal__header drawer__header flex">
+        <h3 class="title">Редактирование основной информации</h3>
+        <button class="button__close drawer__close">
+          ✖
+        </button>
+      </div>
+      <div class="drawer__body">
+        <form action="" id="settings-form" class="form__setting flex column">
+            {% csrf_token %}
+        </form>
+      </div>
+      <div class="drawer__footer__settings flex">
+        <button class="btn btn__secondary drawer__close">
+          Отменить
+        </button>
+        <button id="submit" class="btn btn__primary">
+          Сохранить
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="modal-edit" class="modal__edit">
+  <div class="overlay"></div>
+  <div class="modal__wrapper">
+    <div class="modal__content flex column">
+      <div class="modal__header flex">
+        <h3 class="title"></h3>
+        <button id="modal-close" class="button__close">
+          ✖
+        </button>
+      </div>
+      <div class="drawer__body modal__body"></div>
+      <div class="drawer__footer__settings flex">
+        <button id="modal-close" class="btn btn__error">
+          Выслать повторно
+        </button>
+        <button id="submit" class="btn btn__secondary">
+          Ок
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="modal-confirm" class="confirm__wrapper">
+  <div class="modal__confirm flex">
+    <div class="confirm__content flex column">
+      <img src="{% static 'img/logo.png' %}" alt="Логотип библиотеки БЧ">
+      <div class="confirm__body flex column"></div>
+    </div>
+  </div>
+</div>
+
+
+<div id="modal-success" class="modal__edit">
+  <div class="overlay"></div>
+  <div class="modal__wrapper">
+    <div class="modal__content flex column">
+      <div class="modal__header flex">
+        <button id="modal-close" class="button__close">
+          ✖
+        </button>
+      </div>
+      <div class="drawer__body modal__body">
+        <img src={% static 'assets/success.svg' %} alt="confirm success">
+        <h3 class="title"></h3>
+      </div>
+      <div class="drawer__footer__settings flex row">
+        <button id="modal-close" class="btn btn__secondary">
+          Ок
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+{{ reader_info|json_script:"readerInfo" }}
+{{ reader_auth|json_script:"readerAuth" }}
+
+<script src="{% static 'admin/js/script.js' %}"></script>
+
+{% endblock %}

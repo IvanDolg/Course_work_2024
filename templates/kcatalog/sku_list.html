@@ -1,0 +1,10 @@
+{% extends 'admin/change_list.html' %}
+
+{% block object-tools %}
+    <div class="kcatalog-actions">
+        <a href="import" class="btn btn-success float">Import data</a>
+        <a href="export" class="btn btn-success float">Export data</a>
+    </div>
+    <br />
+    {{ block.super }}
+{% endblock %}

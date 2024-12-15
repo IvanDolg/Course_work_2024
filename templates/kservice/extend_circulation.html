@@ -1,0 +1,35 @@
+{% extends "admin/change_form.html" %}
+
+
+{% block submit_buttons_bottom %}
+{% if original and original.id %}
+<div class="submit-row" style="display: flex; flex-direction: column; gap: 14px; padding-top: 15px;">
+    {% if original and original.status_display == 'Новый' %}
+{#        <input type="submit" value="Выдать издание" class="btn btn-success form-control"#}
+{#            formaction="{% url 'admin:issue_circulation' object_id=original.id %}">#}
+        <div class="submit-row" style="display: flex; flex-direction: column; gap: 10px; padding-top: 15px;">
+        <button type="submit" class="btn btn-success form-control" name="_save"
+                value="Сохранить">
+            Выдать издания
+        </button>
+        </div>
+    {% endif %}
+    {% if original and original.status_display == 'Выдано' %}
+        <input type="submit" value="Продлить выдачу" class="btn btn-success form-control"
+            formaction="{% url 'admin:extend_circulation' object_id=original.id %}">
+    {% endif %}
+    {% if original and original.status_display == 'Выдано' %}
+        <input type="submit" value="Вернуть издания" class="btn btn-success form-control"
+            formaction="{% url 'admin:return_books' object_id=original.id %}">
+    {% endif %}
+</div>
+{% endif %}
+    {% if not original and not original.id %}
+        <div class="submit-row" style="display: flex; flex-direction: column; gap: 10px; padding-top: 15px;">
+        <button type="submit" class="btn btn-success form-control" name="_save"
+                value="Сохранить">
+            Выдать издания
+        </button>
+    </div>
+    {% endif %}
+{% endblock %}

@@ -1,0 +1,23 @@
+{% extends 'admin/change_form.html' %}
+
+
+{% block submit_buttons_bottom %}
+    <div class="submit-row" style="display: flex; flex-direction: column; gap: 10px; padding-top: 15px;">
+        <button type="submit" class="btn btn-success form-control" name="_continue"
+                value="Сохранить и продолжить редактирование">
+            Сохранить
+        </button>
+    </div>
+    {% if original and original.status_display == 'Новый' %}
+        <div class="submit-row" style="display: flex; flex-direction: column; gap: 10px; padding-top: 15px;">
+            <input type="submit" value="Выдать издание" class="btn btn-success form-control"
+                   formaction="{% url 'admin:accept_mba' object_id=original.id %}">
+        </div>
+    {% endif %}
+    {% if original and original.status_display == 'Выдано'%}
+        <div class="submit-row" style="display: flex; flex-direction: column; gap: 10px; padding-top: 15px;">
+            <input type="submit" value="Вернуть издание" class="btn btn-success form-control"
+                   formaction="{% url 'admin:return_mba' object_id=original.id %}">
+        </div>
+    {% endif %}
+{% endblock %}

@@ -1,0 +1,120 @@
+{% extends "search.html" %}
+{% load static i18n %}
+
+{% block extrastyle %}
+    {{ block.super }}
+    <style>
+
+        /* Two-column flexbox layout for search mode and search field */
+        .search-mode-field-wrapper {
+            display: flex;
+            gap: 20px; /* Space between columns */
+        }
+
+        /* Each column inside the flexbox */
+        .search-mode, .search-field {
+            flex: 1; /* Equal width for both */
+        }
+
+        /* Search button style */
+        .btn-submit {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+
+    </style>
+{% endblock %}
+
+{% block search_form %}
+    <div class="container">
+        <h1>{% trans "Поиск" %}</h1>
+
+        <!-- Search form layout -->
+        <form class="search-form" method="GET" action="{% url 'basic_search' %}">
+
+            <!-- Document type section -->
+            <div class="document-type-filter">
+                <div class="form-group">
+                    <label>{% trans "Вид документа" %}</label>
+                    <div>
+                        {% for choice in form.document_type.field.choices %}
+                            <label>
+                                <input type="checkbox" name="document_type" value="{{ choice.0 }}"
+                                       {% if choice.0 in selected_document_types %}checked{% endif %}>
+                                {{ choice.1 }}
+                            </label>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Search and filters section -->
+            <div class="search-filters">
+                <!-- Database selection -->
+                <div class="form-group">
+                    <label for="database">{% trans "База данных" %}</label>
+                    {{ form.database }}  <!-- Assuming form.database correctly retains state -->
+                </div>
+
+                <!-- Search input -->
+                <div class="form-group">
+                    <label for="search_query">{% trans "Поиск" %}</label>
+                    <input type="text" placeholder="Введите запрос" name="search_query" class="form-control" value="{{ form.search_query.value|default:'' }}">
+                </div>
+
+                <div class="form-group">
+                    <label for="page_size">{% trans "Размер страницы" %}</label>
+                    {{ form.page_size }}  <!-- Dropdown for selecting page size -->
+                </div>
+
+                <!-- Two-column section: Search mode and Search field -->
+                <div class="search-mode-field-wrapper">
+                    <!-- Search mode -->
+                    <div class="form-group search-mode">
+                        <label>{% trans "Режим поиска" %}</label>
+                        <div>
+                            {% for choice in form.search_mode.field.choices %}
+                                <label>
+                                    <input type="radio" name="{{ form.search_mode.name }}" value="{{ choice.0 }}"
+                                        {% if choice.0 == form.search_mode.value %}checked{% endif %}>
+                                    {{ choice.1 }}
+                                </label>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- Search field -->
+                    <div class="form-group search-field">
+                        <label>{% trans "Область поиска" %}</label>
+                        <div>
+                            {% for choice in form.search_field.field.choices %}
+                                <label>
+                                    <input type="radio" name="{{ form.search_field.name }}" value="{{ choice.0 }}"
+                                        {% if choice.0 == form.search_field.value %}checked{% endif %}>
+                                    {{ choice.1 }}
+                                </label>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Publication date range -->
+                <div class="form-group inline">
+                    <label>{% trans "Год издания" %}</label>
+                    <label>{% trans "С" %} {{ form.pub_date_from }}</label>
+                    <label>{% trans "До" %} {{ form.pub_date_to }}</label>
+                </div>
+
+                <!-- Submit button -->
+                <div class="form-group">
+                    <button type="submit" class="btn-submit">{% trans "Поиск" %}</button>
+                </div>
+            </div>
+        </form>
+    </div>
+{% endblock %}

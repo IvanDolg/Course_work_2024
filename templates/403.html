@@ -1,0 +1,27 @@
+{% load i18n static jazzmin admin_urls %}
+{% get_current_language as LANGUAGE_CODE %}
+{% get_current_language_bidi as LANGUAGE_BIDI %}
+
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<title>Доступ ограничен</title>
+		<link rel="stylesheet" type="text/css" href="{% static 'css/main.css' %}" />
+	</head>
+	<body>
+		<div class="error-container">
+			<div class="error-container-img">
+				<img src="{% static 'img/logo.png' %}" alt="Logo" />
+			</div>
+			<h1 class="custom-error-title">Ваш доступ к системе ограничен</h1>
+			<p class="custom-error-text">
+				Пожалуйста, обратитесь в службу поддержки для получения дополнительной
+				информации.
+			</p>
+			<button class="my_btn btn__error error-logout-button" type="button" onclick="location.href='{% url 'admin:logout' %}'">
+				{% trans 'Log out' %}
+			</button>
+		</div>
+	</body>
+</html>

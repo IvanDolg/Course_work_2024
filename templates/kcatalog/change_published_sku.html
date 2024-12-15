@@ -1,0 +1,465 @@
+{% extends 'admin/change_form.html' %}
+{% load i18n admin_urls static admin_modify %}
+
+
+{% block object-tools %}
+    {{ block.super }}
+
+    {% if not show_buttons and original and original.id %}
+    <div class="submit-row" style="display: flex; flex-direction: column; gap: 10px; padding-top: 15px;">
+        <input type="submit" value="Добавить в заказ" class="btn btn-success form-control"
+            formaction="{% url 'admin:add_to_order' object_id=original.id  %}">
+    </div>
+    {% endif %}
+
+    {% if related_items.digitalresource and not related_items.copyright %}
+    <div class="submit-row" style="display: flex; flex-direction: column; gap: 10px; padding-top: 15px;">
+        <a href="/media/{{ related_items.digitalresource.resource }}" class="btn btn-success form-control">
+            Электронное издание
+        </a>
+    </div>
+    {% endif %}
+
+    {% if related_items.digitalresource and related_items.copyright %}
+    <div class="submit-row" style="display: flex; flex-direction: column; gap: 10px; padding-top: 15px;">
+        <button id="copyrightButton" class="btn btn-success form-control">
+            Электронное издание
+        </button>
+    </div>
+    {% endif %}
+
+    {% if show_buttons %}
+        <div class="submit-row" style="display: flex; flex-direction: column; gap: 10px; padding-top: 15px;">
+            <input type="submit" value="Бронь" class="btn btn-success form-control"
+            formaction="{% url 'admin:add_to_order' object_id=original.id  %}">
+
+            <input type="submit" value="МБА" class="btn btn-success form-control"
+            formaction="{% url 'admin:create_mba_order' object_id=original.id  %}">
+        </div>
+    {% endif %}
+{% endblock %}
+
+
+{% block content %}
+<!-- {{ block.super }} -->
+
+<div class="card-body">
+    <ul class="nav nav-tabs mb-3" role="tablist" id="jazzy-tabs">
+        <li class="nav-item">
+            <a class="nav-link active" data-toggle="pill" role="tab" aria-controls="main-info-tab" aria-selected="true" href="#main-info-tab">
+                Основная информация
+            </a>
+        </li>
+        <li class="nav-item">
+            {% if related_items.PERIODICAL %}
+                <a class="nav-link" data-toggle="pill" role="tab" aria-controls="related-records-tab" aria-selected="false" href="#related-records-tab">
+                    Номера
+                </a>
+            {% endif %}
+        </li>
+        <li class="nav-item">
+            {% if related_items.SPECIFICATION %}
+                <a class="nav-link" data-toggle="pill" role="tab" aria-controls="related-records-tab" aria-selected="false" href="#related-records-tab">
+                    Тома
+                </a>
+            {% endif %}
+        </li>
+        <li class="nav-item">
+            {% if related_items.PARTS %}
+                <a class="nav-link" data-toggle="pill" role="tab" aria-controls="related-records-tab" aria-selected="false" href="#related-records-tab">
+                    Части
+                </a>
+            {% endif %}
+        </li>
+        <li class="nav-item">
+            {% if related_items.ANALYTICS %}
+                <a class="nav-link" data-toggle="pill" role="tab" aria-controls="related-records-tab" aria-selected="false" href="#related-records-tab">
+                    Аналитика
+                </a>
+            {% endif %}
+        </li>
+    </ul>
+
+    <div class="tab-content">
+        <div id="main-info-tab" class="tab-pane fade active show" role="tabpanel">
+            {# Здесь оставляем оригинальную форму #}
+            {{ block.super }}
+        </div>
+
+        <div id="related-records-tab" class="tab-pane fade" role="tabpanel">
+            <div class="js-inline-admin-formset inline-group" id="belmarc-inline">
+                <div class="tabular inline-related">
+                    <fieldset class="module">
+
+                        {% if original.template_type == 'PERIODICAL' %}
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Номер</th>
+                                        <th>Год</th>
+                                        <th>Месяц</th>
+                                        <th>Действие</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for item in related_items.PERIODICAL %}
+                                    <tr>
+                                        <td>{{ item.title_and_statement_of_responsibility.volume_designation }}</td>
+                                        <td>{{ item.title_and_statement_of_responsibility.dates_of_work|slice:":2" }}</td>
+                                        <td>{{ item.title_and_statement_of_responsibility.dates_of_work|slice:"2:6" }}</td>
+                                        <td>
+                                            <a href="{% url 'admin:kcatalog_publishedsku_change' item.id %}" class="related-widget-wrapper-link">
+                                                Открыть
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        {% endif %}
+
+                        {% if original.template_type == 'SPECIFICATION' %}
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Номер</th>
+                                    <th>Действие</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in related_items.SPECIFICATION %}
+                                <tr>
+                                    <td>{{ item.title_and_statement_of_responsibility.volume_designation }}</td>
+                                    <td>
+                                        <a href="{% url 'admin:kcatalog_publishedsku_change' item.id %}" class="related-widget-wrapper-link">
+                                            Открыть
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    {% endif %}
+
+                    {% if original.template_type == 'MULTIVOLUME' %}
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Номер</th>
+                                    <th>Действие</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in related_items.PARTS %}
+                                <tr>
+                                    <td>{{ item.title_and_statement_of_responsibility.volume_designation }}</td>
+                                    <td>
+                                        <a href="{% url 'admin:kcatalog_publishedsku_change' item.id %}" class="related-widget-wrapper-link">
+                                            Открыть
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    {% endif %}
+
+                {% if original.template_type == 'ANALYTICS' %}
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Ссылка</th>
+                                <th>Название статьи</th>
+                                <th>Автор</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in related_items.ANALYTICS %}
+                            <tr>
+                                <td>
+                                    <a href="{{ item.system_requirements.path }}" target="_blank">
+                                        {{ item.system_requirements.path }}
+                                    </a>
+                                </td>
+                                <td>{{ item.title_and_statement_of_responsibility.title }}</td>
+                                <td>{{ item.personal_name_subject.entry_element }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                {% endif %}
+
+                    </fieldset>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{# Добавляем необходимые стили и скрипты #}
+<style>
+    #belmarc-inline table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 20px;
+        background-color: white;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        table-layout: fixed; /* Добавлено для фиксированной ширины колонок */
+    }
+
+    /* Задаем ширину для каждой колонки */
+    #belmarc-inline th:nth-child(1),
+    #belmarc-inline td:nth-child(1) {
+        width: 25%;
+    }
+
+    #belmarc-inline th:nth-child(2),
+    #belmarc-inline td:nth-child(2) {
+        width: 25%;
+    }
+
+    #belmarc-inline th:nth-child(3),
+    #belmarc-inline td:nth-child(3) {
+        width: 25%;
+    }
+
+    #belmarc-inline th:nth-child(4),
+    #belmarc-inline td:nth-child(4) {
+        width: 25%;
+    }
+
+    #belmarc-inline th {
+        padding: 12px 15px;
+        background: #f8f9fa;
+        border-bottom: 2px solid #dee2e6;
+        font-weight: 600;
+        text-align: left;
+        color: #495057;
+    }
+
+    #belmarc-inline td {
+        padding: 12px 15px;
+        border-bottom: 1px solid #dee2e6;
+        vertical-align: middle;
+        word-wrap: break-word; /* Добавлено для переноса длинного текста */
+    }
+
+    /* Остальные стили остаются без изменений */
+    #belmarc-inline tr:hover {
+        background-color: #f8f9fa;
+    }
+
+    #belmarc-inline .related-widget-wrapper-link {
+        color: #007bff;
+        text-decoration: none;
+        transition: color 0.2s;
+    }
+
+    #belmarc-inline .related-widget-wrapper-link:hover {
+        color: #0056b3;
+        text-decoration: underline;
+    }
+
+    .row1 {
+        background-color: #ffffff;
+    }
+
+    .row2 {
+        background-color: #fafafa;
+    }
+</style>
+
+<script>
+    django.jQuery(document).ready(function() {
+        // Активация табов
+        django.jQuery('.nav-link').on('click', function(e) {
+            e.preventDefault();
+            django.jQuery(this).tab('show');
+        });
+    });
+</script>
+
+{% if related_items.copyright %}
+<!-- Модальное окно для авторских прав -->
+<div id="copyrightModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Уважаемый пользователь</h2>
+            <span class="close">&times;</span>
+        </div>
+        <div class="modal-body">
+            <p>Данное издание защищено авторскими правами</p>
+            <p>Мы можем выслать вам часть издания на электронную почту</p>
+            <p>Укажите что вас в этом издании больше всего интересует</p>
+            <input type="text" id="interestInput" class="form-control" placeholder="Введите ваш интерес...">
+        </div>
+        <div class="modal-footer">
+            <button id="sendButton" class="btn btn-primary">Отправить</button>
+            <button id="cancelButton" class="btn btn-secondary">Назад</button>
+        </div>
+    </div>
+</div>
+
+<!-- Добавить стили для модального окна -->
+<style>
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.5);
+}
+
+.modal-content {
+    background-color: #fefefe;
+    margin: 15% auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 50%;
+    border-radius: 5px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #ddd;
+    padding-bottom: 10px;
+    margin-bottom: 20px;
+}
+
+.modal-header h2 {
+    margin: 0;
+    font-size: 1.5em;
+}
+
+.close {
+    color: #aaa;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.close:hover {
+    color: black;
+}
+
+.modal-body {
+    margin-bottom: 20px;
+}
+
+.modal-body input {
+    width: 100%;
+    padding: 8px;
+    margin-top: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.modal-footer {
+    border-top: 1px solid #ddd;
+    padding-top: 15px;
+    text-align: right;
+}
+
+.modal-footer button {
+    margin-left: 10px;
+}
+</style>
+
+<!-- Добавить скрипт для работы с модальным окном -->
+<script>
+django.jQuery(document).ready(function($) {
+    // Получаем элементы модального окна
+    var modal = document.getElementById("copyrightModal");
+    var btn = document.getElementById("copyrightButton");
+    var span = document.getElementsByClassName("close")[0];
+    var cancelBtn = document.getElementById("cancelButton");
+    var sendBtn = document.getElementById("sendButton");
+
+    // Изменяем поведение кнопки "Авторские права"
+    if (btn) {
+        btn.onclick = function(e) {
+            e.preventDefault();
+            modal.style.display = "block";
+        }
+    }
+
+    // Закрытие по клику на X
+    span.onclick = function() {
+        modal.style.display = "none";
+    }
+
+    // Закрытие по клику на "Назад"
+    cancelBtn.onclick = function() {
+        modal.style.display = "none";
+    }
+
+    // Закрытие по клику вне модального окна
+    window.onclick = function(event) {
+        if (event.target == modal) {
+            modal.style.display = "none";
+        }
+    }
+
+    // Обработка отправки формы
+    sendBtn.onclick = function() {
+        var interest = document.getElementById("interestInput").value;
+        if (interest.trim()) {
+            // Получаем CSRF token
+            var csrftoken = django.jQuery("[name=csrfmiddlewaretoken]").val();
+
+            // Отправляем AJAX запрос
+            $.ajax({
+                url: '{% url "send_copyright_request" %}',
+                type: 'POST',
+                data: {
+                    'interest': interest,
+                    'edition_id': '{{ original.edition_id }}',
+                    'csrfmiddlewaretoken': csrftoken
+                },
+                success: function(response) {
+                    if (response.success) {
+                        alert(response.message);
+                        modal.style.display = "none";
+                        document.getElementById("interestInput").value = '';
+                    } else {
+                        alert(response.message || 'Произошла ошибка');
+                    }
+                },
+                error: function(xhr) {
+                    var message = 'Произошла ошибка при отправке запроса';
+                    if (xhr.responseJSON && xhr.responseJSON.message) {
+                        message = xhr.responseJSON.message;
+                    }
+                    alert(message);
+                }
+            });
+        } else {
+            alert("Пожалуйста, укажите ваш интерес");
+        }
+    }
+});
+</script>
+{% endif %}
+{% endblock %}
+
+{% block submit_buttons_bottom %}
+    {{ block.super }}
+    {% if show_cataloger_button %}
+    <div class="submit-row">
+        <a href="{% url 'admin:kcatalog_belmarc_change' original.id %}" class="btn btn-success form-control" style="margin-top: 10px;">Каталогизатор</a>
+    </div>
+    {% endif %}
+    {% if show_add_to_order_button %}
+        <div class="submit-row">
+            <input type="button" value="{% trans 'Зарегистрировать' %}"
+                   onclick="window.location.href='{% url 'admin:add_to_order' object_id=original.pk %}'"
+                   class="default" style="float: left"/>
+        </div>
+    {% endif %}
+{% endblock %}

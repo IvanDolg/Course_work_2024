@@ -1,0 +1,9 @@
+{
+  "id": 2,
+  "type": "PERIODICAL",
+  "subtype": "MAGAZINES",
+  "database": "database 1",
+  "title": "Understanding Neural Networks",
+  "date_of_publication": "2022-01-01",
+  "note": "An in-depth analysis of neural network architectures and their applications."
+}

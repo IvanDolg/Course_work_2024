@@ -1,0 +1,15 @@
+{% extends "admin/change_form.html" %}
+
+
+{% block submit_buttons_bottom %}
+    <div class="submit-row" style="display: flex; flex-direction: column; gap: 14px; padding-top: 15px;">
+        <button type="submit" class="btn btn-success form-control" name="_save"
+                value="Сохранить">
+            Сохранить
+        </button>
+        <button type="submit" class="btn btn-success form-control" name="_continue"
+                value="Сохранить и продолжить редактирование">
+            Сохранить
+        </button>
+    </div>
+{% endblock %}

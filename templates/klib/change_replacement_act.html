@@ -1,0 +1,22 @@
+{% extends 'admin/change_form.html' %}
+{% load i18n admin_urls static admin_modify %}
+
+{% block object-tools %}
+{{ block.super }}
+<div class="submit-row" style="display: flex; flex-direction: column; gap: 10px; padding-top: 15px;">
+    <div class="submit-row" style="display: flex; flex-direction: column; gap: 10px; padding-top: 15px;">
+        <input type="submit" value="Подтвердить" class="btn btn-success form-control"
+            formaction="{% url 'admin:approve' object_id=original.pk %}">
+    </div>
+    
+    <div class="submit-row" style="display: flex; flex-direction: column; gap: 10px; padding-top: 15px;">
+        <input type="submit" value="Распечатать акт" class="btn btn-info form-control"
+            formaction="{% url 'admin:print_act' object_id=original.pk %}">
+    </div>
+
+    <div class="submit-row" style="display: flex; flex-direction: column; gap: 10px; padding-top: 15px;">
+        <input type="submit" value="Отклонить" class="btn btn-danger form-control"
+            formaction="{% url 'admin:disapprove' object_id=original.pk %}">
+    </div>
+</div>
+{% endblock %}

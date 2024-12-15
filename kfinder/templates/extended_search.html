@@ -1,0 +1,548 @@
+{% extends "search.html" %}
+{% load static i18n %}
+
+{% block search_form %}
+<div class="container">
+    <h1>Меню расширенного поиска</h1>
+
+    <form method="GET" action="{% url 'extended_search' %}">
+        <div id="search-criteria-container" class="form-group">
+            <!-- Здесь динамически будут появляться параметры поиска -->
+        </div>
+
+        <div class="form-group">
+            <button type="button" id="add-search-param" class="btn btn-secondary">Добавить параметр</button>
+        </div>
+
+        <div class="form-group">
+            <button type="button" id="select-topics" class="btn btn-secondary">Выбрать тематики</button>
+        </div>
+
+        <div id="selected-topics-container"></div>
+
+        <div class="search-form">
+            <!-- Document type section -->
+            <div class="document-type-filter">
+                <div class="form-group">
+                    <label>{% trans "Вид документа" %}</label>
+                    <div>
+                        {% for choice in form.document_type.field.choices %}
+                            <label>
+                                <input type="checkbox" name="document_type" value="{{ choice.0 }}"
+                                       {% if choice.0 in selected_document_types %}checked{% endif %}>
+                                {{ choice.1 }}
+                            </label>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="search-filters">
+                <!-- Database selection -->
+                <div id="database-criteria-container" class="form-group">
+                    <!-- Здесь динамически будут появляться базы данных -->
+                </div>
+
+                <div class="form-group">
+                    <button type="button" id="add-database-param" class="btn btn-secondary">Добавить базу данных</button>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="page_size">{% trans "Размер страницы" %}</label>
+                {{ form.page_size }}  <!-- Dropdown for selecting page size -->
+            </div>
+        </div>
+
+{#        <input type="hidden" name="search_params" id="search_params">#}
+
+        <button type="submit" class="btn btn-primary">Поиск</button>
+{#        <button type="button" class="btn btn-secondary" onclick="window.history.back();">Назад</button>#}
+    </form>
+</div>
+
+<script>
+    // -------------------------- Параметры поиска --------------------------
+    const maxParams = 4;  // Максимальное количество параметров поиска
+    const selectedTypes = new Set();  // Множество для хранения уникальных типов поиска
+    const occupiedIndices = new Set(); // Множество для хранения занятых индексов
+
+    document.getElementById('add-search-param').addEventListener('click', function() {
+        const container = document.getElementById('search-criteria-container');
+
+        // Проверяем, достигнут ли лимит параметров
+        if (occupiedIndices.size >= maxParams) {
+            alert('Вы можете добавить не более 4 параметров поиска.');
+            return;
+        }
+
+        // Находим первый свободный индекс
+        let searchParamIndex = 0;
+        while (occupiedIndices.has(searchParamIndex)) {
+            searchParamIndex++;
+        }
+        occupiedIndices.add(searchParamIndex); // Добавляем индекс в занятые
+
+        let newField = document.createElement('div');
+        newField.classList.add('form-group', 'search-param-group', 'd-flex', 'align-items-center', 'mb-3');
+        newField.innerHTML = `
+            <label for="search_type_${searchParamIndex}" class="mr-2">Тип поиска</label>
+            <select id="search_type_${searchParamIndex}" class="form-control search-type-select mr-3" style="width: 200px;">
+                ${generateSearchTypeOptions()}
+            </select>
+            <div class="search-param-input flex-grow-1 d-flex align-items-center" id="search_input_${searchParamIndex}">
+                <!-- Поля для ввода поиска появятся здесь -->
+            </div>
+            <button type="button" class="btn btn-danger ml-2 remove-param">Удалить</button>
+        `;
+
+        container.appendChild(newField);
+
+        const searchTypeSelect = document.getElementById(`search_type_${searchParamIndex}`);
+
+        // Обработчик изменения типа поиска
+        searchTypeSelect.addEventListener('change', function() {
+            const selectedValue = searchTypeSelect.value;
+            updateSearchInput(selectedValue, searchParamIndex);
+            updateDisabledOptions();
+        });
+
+        // Добавление обработчика удаления
+        newField.querySelector('.remove-param').addEventListener('click', function() {
+            container.removeChild(newField);
+            occupiedIndices.delete(searchParamIndex); // Удаляем индекс из занятых
+            selectedTypes.delete(searchTypeSelect.value); // Удаляем тип из множества
+            updateDisabledOptions(); // Обновляем доступные опции
+            updateCurrentParamsCount(); // Обновляем текущее количество параметров
+        });
+
+        // Обновляем поля ввода при добавлении нового параметра
+        updateSearchInput(searchTypeSelect.value, searchParamIndex);
+        updateDisabledOptions();
+    });
+
+    function openSmallWindow(url) {
+        var width = 800;
+        var height = 500;
+        var left = 0;
+        var top = 0;
+        
+        window.open(url, '_blank', 'width=' + width + ',height=' + height + 
+                    ',left=' + left + ',top=' + top + 
+                    ',resizable=yes,scrollbars=yes,status=yes');
+
+
+        return false;
+    }
+
+    function generateSearchTypeOptions() {
+        const searchTypes = [
+            { value: '', label: 'Выберите тип поиска' },
+            { value: 'title', label: 'Заглавие' },
+            { value: 'author', label: 'Автор' },
+            { value: 'series_title', label: 'Название серии' },
+            { value: 'year', label: 'Год издания' }
+        ];
+
+        return searchTypes.map(type => {
+            const disabled = selectedTypes.has(type.value) ? 'disabled' : '';
+            return `<option value="${type.value}" ${disabled}>${type.label}</option>`;
+        }).join('');
+    }
+
+    function updateSearchInput(searchType, index) {
+        const inputContainer = document.getElementById(`search_input_${index}`);
+
+        // Получаем список лет из Django-шблона и парсим его в массив JavaScript
+        const years = JSON.parse('{{ years|safe }}'); // Парсим строку JSON
+
+        inputContainer.innerHTML = ''; // Очищаем поле перед добавленем нового
+
+        if (searchType === 'title' || searchType === 'author' || searchType === 'series_title') {
+            inputContainer.innerHTML = `
+                <input type="text" name="${searchType}" class="form-control" placeholder="Введите ${searchType}">
+            `;
+        } else if (searchType === 'year') {
+            // Генерируем опции для селекта
+            let yearOptions = years.map(year => `<option value="${year}">${year}</option>`).join('');
+            inputContainer.innerHTML = `
+                <label for="year_from" class="mr-2">Год с</label>
+                <select name="year_from" class="form-control mr-2" style="width: 100px;">
+                    ${yearOptions}
+                </select>
+                <label for="year_to" class="mr-2">по</label>
+                <select name="year_to" class="form-control" style="width: 100px;">
+                    ${yearOptions}
+                </select>
+            `;
+        }
+
+        const currentParamsCount = document.querySelectorAll('.search-param-group').length;
+        toggleAddParamButton(currentParamsCount); // Обновляем состояние кнопки "Добавить параметр"
+    }
+
+    function updateDisabledOptions() {
+        // Очищаем Set перед обновлением
+        selectedTypes.clear();
+
+        // Собираем все выбранные типы
+        document.querySelectorAll('.search-type-select').forEach(select => {
+            const selectedValue = select.value;
+            if (selectedValue) {
+                selectedTypes.add(selectedValue);
+            }
+        });
+
+        // Обновляем доступные опции в выпадающих списках
+        document.querySelectorAll('.search-type-select').forEach(select => {
+            const currentValue = select.value;
+            select.innerHTML = generateSearchTypeOptions();
+
+            // Устанавливаем прежнее значение
+            select.value = currentValue;
+        });
+    }
+
+    function updateCurrentParamsCount() {
+        const currentParamsCount = document.querySelectorAll('.search-param-group').length;
+        toggleAddParamButton(currentParamsCount);
+    }
+
+    function toggleAddParamButton(currentParamsCount) {
+        document.getElementById('add-search-param').disabled = currentParamsCount >= maxParams;
+    }
+
+    // -------------------------- Базы данных --------------------------
+    const maxDatabases = 8;  // Максимальное количество баз данных
+    const selectedDatabases = new Set();  // Множество для хранения уникальных баз данных
+    const occupiedDatabaseIndices = new Set(); // Множество для хранения занятых индексов для баз данных
+
+    document.getElementById('add-database-param').addEventListener('click', function() {
+        const container = document.getElementById('database-criteria-container');
+
+        // Проверяем, достигнут ли лимит баз данных
+        if (occupiedDatabaseIndices.size >= maxDatabases) {
+            alert('Вы можете добавить не более 8 баз данных.');
+            return;
+        }
+
+        // Находим первый свободный индекс
+        let databaseParamIndex = 0;
+        while (occupiedDatabaseIndices.has(databaseParamIndex)) {
+            databaseParamIndex++;
+        }
+        occupiedDatabaseIndices.add(databaseParamIndex); // Добавляем индекс в занятые
+
+        let newDatabaseField = document.createElement('div');
+        newDatabaseField.classList.add('form-group', 'database-param-group', 'd-flex', 'align-items-center', 'mb-3');
+        newDatabaseField.innerHTML = `
+            <label for="database_${databaseParamIndex}" class="mr-2">База данных</label>
+            <select name="database_${databaseParamIndex}" id="database_${databaseParamIndex}" class="form-control database-select mr-3" style="width: 300px;">
+                ${generateDatabaseOptions()}
+            </select>
+            <button type="button" class="btn btn-danger ml-2 remove-database-param">Удалить</button>
+        `;
+
+        container.appendChild(newDatabaseField);
+
+        const databaseSelect = document.getElementById(`database_${databaseParamIndex}`);
+
+        // Обработчик изменения базы данных
+        databaseSelect.addEventListener('change', function() {
+            updateDisabledDatabaseOptions();
+        });
+
+        // Добавление обработчика удаления
+        newDatabaseField.querySelector('.remove-database-param').addEventListener('click', function() {
+            container.removeChild(newDatabaseField);
+            occupiedDatabaseIndices.delete(databaseParamIndex); // Удаляем индекс из занятых
+            selectedDatabases.delete(databaseSelect.value); // Удаляем базу данных из множества
+            updateDisabledDatabaseOptions(); // Обновляем доступные опции
+            updateCurrentDatabaseCount(); // Обновляем текущее количество баз данных
+        });
+
+        // Обновляем опции для выбора базы данных
+        updateDisabledDatabaseOptions();
+    });
+
+    function generateDatabaseOptions() {
+        const databases = JSON.parse('{{ databases|escapejs }}');
+        const databaseTypes = databases.map(db => {
+            return { value: db[0], label: db[1] };
+        });
+
+        return databaseTypes.map(db => {
+            const disabled = selectedDatabases.has(db.value) ? 'disabled' : '';
+            return `<option value='${db.value}' ${disabled}>${db.label}</option>`;
+        }).join('');
+    }
+
+    function updateDisabledDatabaseOptions() {
+        // Очищаем Set перед обновлением
+        selectedDatabases.clear();
+
+        // Собираем все выбранные базы данных
+        document.querySelectorAll('.database-select').forEach(select => {
+            const selectedValue = select.value;
+            if (selectedValue) {
+                selectedDatabases.add(selectedValue);
+            }
+        });
+
+        // Обновляем доступные опции в выпадающих списках
+        document.querySelectorAll('.database-select').forEach(select => {
+            const currentValue = select.value;
+            select.innerHTML = generateDatabaseOptions();
+
+            // Восстанавливаем прежнее значение
+            select.value = currentValue;
+        });
+    }
+
+    function updateCurrentDatabaseCount() {
+        const currentDatabasesCount = document.querySelectorAll('.database-param-group').length;
+        toggleAddDatabaseParamButton(currentDatabasesCount);
+    }
+
+    function toggleAddDatabaseParamButton(currentDatabasesCount) {
+        document.getElementById('add-database-param').disabled = currentDatabasesCount >= maxDatabases;
+    }
+
+    document.querySelector('form').addEventListener('submit', function(event) {
+        // Собираем параметры поиска
+        const searchParams = [];
+
+        // Сбор всех параметров поиска
+        document.querySelectorAll('.search-type-select').forEach((select, index) => {
+            const inputValue = document.querySelector(`#search_input_${index} input`);
+            if (inputValue && inputValue.value.trim() !== '') {
+                searchParams.push({
+                    type: select.value,
+                    value: inputValue.value
+                });
+            }
+        });
+
+        {#// Помещаем параметры поиска в скрытое поле search_params#}
+        {#document.getElementById('search_params').value = JSON.stringify(searchParams);#}
+
+        // Обработка баз данных: добавляем их как отдельные параметры в форму
+        let dbIndex = 0;
+        document.querySelectorAll('.database-select').forEach((select) => {
+            if (select.value) {
+                const hiddenInput = document.createElement('input');
+                hiddenInput.type = 'hidden';
+                hiddenInput.name = `database_${dbIndex}`;
+                hiddenInput.value = select.value;
+                document.querySelector('form').appendChild(hiddenInput);
+                dbIndex++;
+            }
+        });
+    });
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const selectedDatabases = {{ selected_databases|safe }};
+        const selectedTitle = "{{ selected_title }}";
+        const selectedAuthor = "{{ selected_author }}";
+        const selectedSeriesTitle = "{{ selected_series_title }}";
+        const selectedYearFrom = "{{ selected_year_from }}";
+        const selectedYearTo = "{{ selected_year_to }}";
+
+        // Восстановление выбранных баз данных
+        selectedDatabases.forEach((database, index) => {
+            addDatabaseField(database); // Добавляем поле базы данных с предварительно выбранным значением
+        });
+
+        if (selectedTitle) {
+            addSearchField('title', selectedTitle); // Добавляем заголовок с восстановленным значением
+        }
+
+        if (selectedAuthor) {
+            addSearchField('author', selectedAuthor); // Добавляем автора с восстановленным значением
+        }
+
+        if (selectedSeriesTitle) {
+            addSearchField('series_title', selectedSeriesTitle); // Добавляем название серии с восстановленным значением
+        }
+
+        if (selectedYearFrom && selectedYearTo) {
+            addSearchField('year', { from: selectedYearFrom, to: selectedYearTo }); // Добавляем диапазон лет
+        }
+
+    });
+
+    function addDatabaseField(selectedDatabase) {
+        const container = document.getElementById('database-criteria-container');
+
+        let databaseParamIndex = container.children.length; // Индекс для нового поля
+
+        let newDatabaseField = document.createElement('div');
+        newDatabaseField.classList.add('form-group', 'database-param-group', 'd-flex', 'align-items-center', 'mb-3');
+        newDatabaseField.innerHTML = `
+            <label for="database_${databaseParamIndex}" class="mr-2">База данных</label>
+            <select name="database_${databaseParamIndex}" id="database_${databaseParamIndex}" class="form-control database-select mr-3" style="width: 300px;">
+                ${regenerateDatabaseOptions(selectedDatabase)} <!-- Генерация опций с выбранным значением -->
+            </select>
+            <button type="button" class="btn btn-danger ml-2 remove-database-param">Удалить</button>
+        `;
+
+        container.appendChild(newDatabaseField);
+
+        // Обработчик изменения базы данных
+        const databaseSelect = document.getElementById(`database_${databaseParamIndex}`);
+        databaseSelect.addEventListener('change', function() {
+            updateDisabledDatabaseOptions();
+        });
+
+        // Обработка удаления базы данных
+        newDatabaseField.querySelector('.remove-database-param').addEventListener('click', function() {
+            container.removeChild(newDatabaseField);
+            updateDisabledDatabaseOptions(); // Обновляем доступные опции
+        });
+    }
+
+    // Функция для генерации опций базы данных
+    function regenerateDatabaseOptions(selectedDatabase) {
+        const databases = JSON.parse('{{ databases|escapejs }}'); // Загрузка доступных баз данных
+        return databases.map(db => {
+            const selected = db[0] === selectedDatabase ? 'selected' : ''; // Проверка, является ли текущая база данных выбранной
+            return `<option value='${db[0]}' ${selected}>${db[1]}</option>`;
+        }).join(''); // Возвращаем все опции в строку
+    }
+
+    function addSearchParam(searchType) {
+        const container = document.getElementById('search-criteria-container');
+
+        // Проверяем, не превышен ли лимит параметров
+        if (occupiedIndices.size >= maxParams) {
+            alert('Вы можете добавить не более 4 параметров поиска.');
+            return;
+        }
+
+        // Находим первый свободный индекс для нового параметра
+        let searchParamIndex = 0;
+        while (occupiedIndices.has(searchParamIndex)) {
+            searchParamIndex++;
+        }
+        occupiedIndices.add(searchParamIndex); // Занимаем индекс
+
+        let newField = document.createElement('div');
+        newField.classList.add('form-group', 'search-param-group', 'd-flex', 'align-items-center', 'mb-3');
+        newField.innerHTML = `
+            <label for="search_type_${searchParamIndex}" class="mr-2">Тип поиска</label>
+            <select id="search_type_${searchParamIndex}" class="form-control search-type-select mr-3" style="width: 200px;">
+                ${generateSearchTypeOptions()}
+            </select>
+            <div class="search-param-input flex-grow-1 d-flex align-items-center" id="search_input_${searchParamIndex}">
+                <!-- Поле для поиска появится здесь -->
+            </div>
+            <button type="button" class="btn btn-danger ml-2 remove-param">Удалить</button>
+        `;
+
+        container.appendChild(newField);
+
+        const searchTypeSelect = document.getElementById(`search_type_${searchParamIndex}`);
+        searchTypeSelect.value = searchType; // Устанавливаем тип поиска
+
+        // Обработчик для изменения типа поиска
+        searchTypeSelect.addEventListener('change', function() {
+            const selectedValue = searchTypeSelect.value;
+            updateSearchInput(selectedValue, searchParamIndex);
+            updateDisabledOptions();
+        });
+
+        // Добавляем удаление поля
+        newField.querySelector('.remove-param').addEventListener('click', function() {
+            container.removeChild(newField);
+            occupiedIndices.delete(searchParamIndex); // Освобождаем индекс
+            selectedTypes.delete(searchTypeSelect.value); // Удаляем тип поиска из выбранных
+            updateDisabledOptions(); // Обновляем опции
+            updateCurrentParamsCount(); // Обновляем количество параметров
+        });
+
+        // Инициализация поля ввода для текущего типа
+        updateSearchInput(searchType, searchParamIndex);
+        updateDisabledOptions();
+
+        return searchParamIndex; // Возвращаем индекс добавленного параметра
+    }
+
+    function addSearchField(type, value) {
+        const container = document.getElementById('search-criteria-container');
+
+        let searchParamIndex = container.children.length; // Индекс для нового поля
+
+        let newField = document.createElement('div');
+        newField.classList.add('form-group', 'search-param-group', 'd-flex', 'align-items-center', 'mb-3');
+        newField.innerHTML = `
+            <label for="search_type_${searchParamIndex}" class="mr-2">Тип поиска</label>
+            <select id="search_type_${searchParamIndex}" class="form-control search-type-select mr-3" style="width: 200px;">
+                ${generateSearchTypeOptions()}
+            </select>
+            <div class="search-param-input flex-grow-1 d-flex align-items-center" id="search_input_${searchParamIndex}">
+                <!-- Поля для ввода поиска появятся здесь -->
+            </div>
+            <button type="button" class="btn btn-danger ml-2 remove-param">Удалить</button>
+        `;
+
+        container.appendChild(newField);
+
+        const searchTypeSelect = document.getElementById(`search_type_${searchParamIndex}`);
+        searchTypeSelect.value = type; // Устанавливаем тип поиска
+
+        // Обновляем поля ввода для параметра в зависимости от типа поиска
+        updateSearchInput(type, searchParamIndex);
+
+        // Устанавливаем значение для полей ввода
+        if (type === 'year') {
+            document.querySelector(`#search_input_${searchParamIndex} select[name="year_from"]`).value = value.from;
+            document.querySelector(`#search_input_${searchParamIndex} select[name="year_to"]`).value = value.to;
+        } else {
+            document.querySelector(`#search_input_${searchParamIndex} input`).value = value;
+        }
+
+        // Добавление обработчика удаления
+        newField.querySelector('.remove-param').addEventListener('click', function() {
+            container.removeChild(newField);
+            occupiedIndices.delete(searchParamIndex); // Удаляем индекс из занятых
+            updateDisabledOptions(); // Обновляем доступные опции
+        });
+    }
+
+    document.getElementById('select-topics').addEventListener('click', function() {
+        var width = 800;
+        var height = 600;
+        var left = (screen.width - width) / 2;
+        var top = (screen.height - height) / 2;
+        
+        // Передаем текущие выбранные топики в URL
+        var currentTopics = Array.from(document.querySelectorAll('#selected-topics-container input[name="selected_topics"]')).map(input => input.value);
+        var topicsParam = currentTopics.map(encodeURIComponent).join(',');
+        
+        window.open("{% url 'topic_select' %}?selected_topics=" + topicsParam, 'TopicSelect', 
+                    'width=' + width + ',height=' + height + 
+                    ',left=' + left + ',top=' + top + 
+                    ',resizable=yes,scrollbars=yes,status=yes');
+    });
+
+    function handleSelectedTopics(topics) {
+        var container = document.getElementById('selected-topics-container');
+        container.innerHTML = '';
+        topics.forEach(function(topic) {
+            var topicElement = document.createElement('div');
+            topicElement.innerHTML = `
+                <input type="hidden" name="selected_topics" value="${topic}">
+                <span style="display: none;">${topic}</span>
+            `;
+            container.appendChild(topicElement);
+        });
+    }
+
+    // Восстанавливаем выбранные топики при загрузке страницы
+    document.addEventListener('DOMContentLoaded', function() {
+        var selectedTopics = {{ selected_topics|safe }};
+        handleSelectedTopics(selectedTopics);
+    });
+</script>
+
+{% endblock %}

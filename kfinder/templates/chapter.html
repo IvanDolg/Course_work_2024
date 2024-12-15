@@ -1,0 +1,57 @@
+{% extends 'search.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Формирование бюллетеня новых поступлений</h2>
+
+    <div class="card mt-4">
+        <div class="card-body">
+            <form method="GET" action="{% url 'chapter' %}">
+                <div class="mb-4">
+                    <label class="form-label">Раздел</label>
+                    <div class="d-flex align-items-center">
+                        <a href="{% url 'admin:kcatalog_chapter_changelist' %}" class="btn btn-outline-primary">Настройка разделов</a>
+                        <select name="query" class="form-select ms-2">
+                            {% for chapter in chapters %}
+                                <option value="{{ chapter.id }}">{{ chapter.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label">Год</label>
+                            <select name="year" class="form-select">
+                                {% for year in years %}
+                                    <option value="{{ year }}" {% if year == selected_year %}selected{% endif %}>
+                                        {{ year }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label">Месяц</label>
+                            <select name="month" class="form-select">
+                                {% for month in months %}
+                                    <option value="{{ month }}" {% if month == selected_month %}selected{% endif %}>
+                                        {{ month }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-between mt-4">
+                    <button type="submit" class="btn btn-primary">Сформировать</button>
+                    <button type="button" class="btn btn-danger">Назад</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

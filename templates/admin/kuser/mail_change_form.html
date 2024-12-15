@@ -1,0 +1,13 @@
+{% extends "admin/change_form.html" %}
+
+{% block object-tools %}
+    <div class="form-group" style="margin-top: 15px; margin-bottom: 1rem">
+        <ul class="object-tools">
+            <li>
+                <a  href="{% url 're_registration' %}" class="btn btn-success form-control" style="margin-top: 10px;">
+                    Перерегистрация
+                </a>
+            </li>
+        </ul>
+    </div>
+{% endblock %}

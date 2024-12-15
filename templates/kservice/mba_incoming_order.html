@@ -1,0 +1,30 @@
+{% extends 'admin/change_form.html' %}
+
+
+{% block submit_buttons_bottom %}
+    <div class="submit-row" style="display: flex; flex-direction: column; gap: 10px; padding-top: 15px;">
+        <button type="submit" class="btn btn-success form-control" name="_continue"
+                value="Сохранить и продолжить редактирование">
+            Сохранить
+        </button>
+    </div>
+    {% if original and original.status == 'SENT' %}
+        <div class="submit-row" style="display: flex; flex-direction: column; gap: 10px; padding-top: 15px;">
+            <input type="submit" value="Отправить издание" class="btn btn-success form-control"
+                   formaction="{% url 'admin:send_edition_mba' object_id=original.id %}">
+        </div>
+    {% endif %}
+    {% if original and original.status == 'SENT' %}
+        <div class="submit-row" style="display: flex; flex-direction: column; gap: 10px; padding-top: 15px;">
+            <input type="submit" value="Отклонить" class="btn btn-success form-control"
+                   formaction="{% url 'admin:reject' object_id=original.id %}">
+        </div>
+    {% endif %}
+    {% if original and original.status == 'SENT_BACK' %}
+        <div class="submit-row" style="display: flex; flex-direction: column; gap: 10px; padding-top: 15px;">
+            <input type="submit" value="Вернуть издание" class="btn btn-success form-control"
+                   formaction="{% url 'admin:return_edition' object_id=original.id %}">
+        </div>
+    {% endif %}
+
+{% endblock %}

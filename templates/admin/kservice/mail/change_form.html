@@ -1,0 +1,33 @@
+{% extends "admin/change_form.html" %}
+
+{% block submit_buttons_bottom %}
+    <div class="submit-row" style="display: flex; flex-direction: column; gap: 14px; padding-top: 15px;">
+        <div class="submit-row" style="display: flex; flex-direction: column; gap: 10px; padding-top: 15px;">
+            <button type="submit" class="btn btn-success form-control" name="_save"
+                    value="Сохранить">
+                Сохранить
+            </button>
+        </div>
+    </div>
+    <div class="form-group" style="margin-top: 15px;">
+        <ul class="object-tools">
+            <li>
+                {% if mail.status == STATUS_FRAMED and not mail.is_returned %}
+                    <a href="{% url 'return_mail' mail.id %}" class="btn btn-warning form-control">
+                        Вернуть
+                    </a>
+                {% elif mail.status == STATUS_NOT_FORMED and not mail.is_returned %}
+                    <a href="{% url 'send_mail' mail.id %}" class="btn btn-success form-control">
+                        Отправить
+                    </a>
+                {% endif %}
+            </li>
+            <li>
+                <a href="{% url 'hide_publication' mail.id %}" class="btn btn-danger form-control"
+                   style="margin-top: 15px;">
+                    Скрыть издание
+                </a>
+            </li>
+        </ul>
+    </div>
+{% endblock %}

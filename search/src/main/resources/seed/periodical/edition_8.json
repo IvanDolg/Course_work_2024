@@ -1,0 +1,9 @@
+{
+  "id": 8,
+  "type": "PERIODICAL",
+  "subtype": "NEWSPAPERS",
+  "database": "database 3",
+  "title": "AI Ethics in 21st Century",
+  "date_of_publication": "2023-01-01",
+  "note": "Discussion of ethical considerations in artificial intelligence."
+}

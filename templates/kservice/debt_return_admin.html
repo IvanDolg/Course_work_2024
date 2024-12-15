@@ -1,0 +1,21 @@
+{% extends "admin/change_form.html" %}
+
+{% block submit_buttons_bottom %}
+    {% if original and original.id %}
+        <div class="submit-row" style="display: flex; flex-direction: column; gap: 10px; padding-top: 15px;">
+            <input type="submit" value="Возврат" class="btn btn-success form-control"
+                   formaction="{% url 'admin:return_debt_admin' object_id=original.id %}">
+        </div>
+    {% endif %}
+    <div class="submit-row" style="display: flex; flex-direction: column; gap: 14px; padding-top: 15px;">
+        <button type="submit" class="btn btn-success form-control" name="_save"
+                value="Сохранить">
+            Сохранить
+        </button>
+        {% if original %}
+            <a href="{% url 'admin:kservice_debtors_delete' original.id %}" class="btn btn-danger form-control">
+                Удалить
+            </a>
+        {% endif %}
+    </div>
+{% endblock %}

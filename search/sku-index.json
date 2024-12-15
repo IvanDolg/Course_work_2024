@@ -1,0 +1,37 @@
+{
+  "mappings": {
+    "properties": {
+      "id": {
+        "type": "long"
+      },
+      "type": {
+        "type": "keyword"
+      },
+      "subtype": {
+        "type": "keyword"
+      },
+      "database": {
+        "type": "keyword"
+      },
+      "title": {
+        "type": "text"
+      },
+      "note": {
+        "type": "text"
+      },
+      "author": {
+        "type": "text"
+      },
+      "date_of_publication": {
+        "type": "date"
+      },
+      "subject": {
+        "type": "keyword"
+      }
+    }
+  },
+  "settings": {
+    "number_of_shards": 1,
+    "number_of_replicas": 1
+  }
+}

@@ -1,0 +1,351 @@
+{% extends "admin/base_site.html" %}
+{% load i18n static jazzmin %}
+{% get_jazzmin_ui_tweaks as jazzmin_ui %}
+
+{% block extrahead %}
+    {{ block.super }}
+    <link rel="stylesheet" type="text/css" href="{% static 'css/main.css' %}">
+{% endblock %}
+
+{% block bodyclass %}{{ block.super }} dashboard{% endblock %}
+
+{% block content_title %}  {% endblock %}
+
+{% block breadcrumbs %}
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'admin:index' %}">{% trans 'Home' %}</a></li>
+        <li class="breadcrumb-item"></li>
+    </ol>
+{% endblock %}
+
+
+{% block content %}
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-9 col-12">
+                {% load log %}
+                {% get_admin_log 6 as admin_log for_user user %}
+                {% if not admin_log %}
+                    <h2 class="text-center">Настройки</h2>
+                {% else %}
+                    <h2 class="text-center">Недавние действия</h2>
+                    <div class="timeline">
+                        {% for entry in admin_log %}
+                            <div>
+                                {% if entry.is_change %}
+                                    <i class="fas fa-edit bg-gray text-xs"></i>
+                                {% elif entry.is_deletion %}
+                                    <i class="fas fa-trash bg-danger text-xs"></i>
+                                {% elif entry.is_addition %}
+                                    <i class="fas fa-plus-circle bg-success text-xs"></i>
+                                {% endif %}
+                                <div class="timeline-item">
+                                    <span class="time">
+                                        <i class="fas fa-clock"></i>
+                                        {% blocktrans with timesince=entry.action_time|timesince %}
+                                            {{ timesince }} ago
+                                        {% endblocktrans %}
+                                    </span>
+                                    <h3 class="timeline-header no-border">
+                                        {% if entry.is_deletion or not entry.get_admin_url %}
+                                            {{ entry.object_repr }}
+                                        {% else %}
+                                            <a href="{{ entry.get_admin_url }}">{{ entry.object_repr }}</a>
+                                        {% endif %}
+                                        {% if entry.model %}
+                                            <span class="mini quiet">{{ entry.model|capfirst }}</span>
+                                        {% endif %}
+                                    </h3>
+                                    {% if not entry.is_deletion %}
+                                        <div class="timeline-body">
+                                            {% if entry.is_addition %}
+                                                {{ entry }}
+                                            {% else %}
+                                                <ul style="list-style: none; padding: 0;">
+                                                    {% action_message_to_list entry as action_message_list %}
+                                                    {% for action_message in action_message_list %}
+                                                        <li>{{ action_message.msg|style_bold_first_word }}</li>
+                                                    {% endfor %}
+                                                </ul>
+                                            {% endif %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        {% endfor %}
+                        <div>
+                            <i class="fa fa-clock bg-gray"></i>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+
+    {% load log %}
+    {% get_admin_log 6 as admin_log for_user user %}
+    {% if not admin_log %}
+
+        <div class="main">
+            <div class="headline__wrapper">
+                <h2 class="headline">Настройки</h2>
+            </div>
+            <section>
+                <div id="settings-title" class="title__wrapper">
+                    <h3 class="title">Основная информация</h3>
+                </div>
+                <div class="flex">
+                    <ul id="list-info" class="list"></ul>
+                </div>
+            </section>
+            <section>
+                <div class="title__wrapper">
+                    <h3 class="title-auth">Данные авторизации</h3>
+                </div>
+                <div class="flex">
+                    <ul id="list-auth" class="list list__auth"></ul>
+                </div>
+            </section>
+        </div>
+{#        <div class="main">#}
+{#            <section>#}
+{#                <div id="settings-title" class="title__wrapper">#}
+{#                    <h3 class="title">Основная информация</h3>#}
+{#                    <button class="my_btn btn__secondary" data-action="edit">#}
+{#                        <span>#}
+{#                            <img src="{% static 'admin/img/icon-changelink.svg' %}" alt="edit">#}
+{#                        </span>Редактировать#}
+{#                    </button>#}
+{#                </div>#}
+{#                <div class="flex">#}
+{#                    <ul id="list-info" class="list">#}
+{#                        <li class="item">#}
+{#                            <dl><dt>{% trans 'Образование' %}</dt><dd>{{ reader.get_education_display }}</dd></dl>#}
+{#                        </li>#}
+{#                        <li class="item">#}
+{#                            <dl><dt>{% trans 'Дата рождения' %}</dt><dd>{{ reader.birth_date }}</dd></dl>#}
+{#                        </li>#}
+{#                        <li class="item">#}
+{#                            <dl><dt>{% trans 'Телефон' %}</dt><dd>{{ reader.phone }}</dd></dl>#}
+{#                        </li>#}
+{#                        <li class="item">#}
+{#                            <dl><dt>{% trans 'Организация' %}</dt><dd>{{ reader.organization }}</dd></dl>#}
+{#                        </li>#}
+{#                        <li class="item">#}
+{#                            <dl><dt>{% trans 'Отдел' %}</dt><dd>{{ reader.department }}</dd></dl>#}
+{#                        </li>#}
+{#                        <li class="item">#}
+{#                            <dl><dt>{% trans 'Должность' %}</dt><dd>{{ reader.position }}</dd></dl>#}
+{#                        </li>#}
+{#                        <li class="item">#}
+{#                            <dl><dt>{% trans 'Адрес' %}</dt>#}
+{#                                <dd>#}
+{#                                    г. {{ reader.city }}, #}
+{#                                    ул. {{ reader.street }}, #}
+{#                                    д. {{ reader.house }}, #}
+{#                                    кв. {{ reader.apartment }}#}
+{#                                </dd>#}
+{#                            </dl>#}
+{#                        </li>#}
+{#                    </ul>#}
+{#               </div>#}
+{#            </section>#}
+{#            <section>#}
+{#                <div class="title__wrapper">#}
+{#                    <h3 class="title">Данные авторизации</h3>#}
+{#                </div>#}
+{#                <div class="flex">#}
+{#                    <ul id="list-auth" class="list list__auth">#}
+{#                        <li class="item auth">#}
+{#                            <dl><dt>{% trans 'Почта' %}</dt><dd>{{ reader.user.email }}</dd></dl>#}
+{#                            <button class="my_btn btn__secondary" data-action="email" id="edit-auth">#}
+{#                                <span>#}
+{#                                    <img src="{% static 'admin/img/icon-changelink.svg' %}" alt="edit">#}
+{#                                </span>Изменить почту#}
+{#                            </button>#}
+{#                        </li>#}
+{#                        <li class="item auth">#}
+{#                            <dl><dt>{% trans 'Логин' %}</dt><dd>{{ reader.user.username }}</dd></dl>#}
+{#                        </li>#}
+{#                        <li class="item auth">#}
+{#                            <dl><dt>{% trans 'Пароль' %}</dt><dd>********</dd></dl>#}
+{#                            <button class="my_btn btn__secondary" data-action="password" id="edit-auth">#}
+{#                                <span>#}
+{#                                    <img src="{% static 'admin/img/icon-changelink.svg' %}" alt="edit">#}
+{#                                </span>Изменить пароль#}
+{#                            </button>#}
+{#                        </li>#}
+{#                    </ul>#}
+{#                </div>#}
+{#            </section>#}
+{#        </div>#}
+
+          <div class="overlay drawer__overlay"></div>
+          <div id="drawer__settings" class="drawer__settings">
+            <div class="drawer__wrapper">
+              <div class="drawer__content flex column">
+                <div class="modal__header drawer__header flex">
+                  <h3 class="title">Редактирование основной информации</h3>
+                  <button class="button__close drawer__close">
+                    ✖
+                  </button>
+                </div>
+                <div class="drawer__body">
+                  <form action="" id="settings-form" class="form__setting flex column">
+                      {% csrf_token %}
+                  </form>
+                </div>
+                <div class="drawer__footer__settings">
+                  <button class="btn btn__secondary drawer__close">
+                    Отменить
+                  </button>
+                  <button id="submit" class="btn btn__primary">
+                    Сохранить
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div id="modal-edit" class="modal__edit">
+            <div class="overlay"></div>
+            <div class="modal__wrapper">
+              <div class="modal__content flex column">
+                <div class="modal__header flex">
+                  <h3 class="title"></h3>
+                  <button id="modal-close" class="button__close">
+                    ✖
+                  </button>
+                </div>
+                <div class="drawer__body modal__body"></div>
+                <div class="drawer__footer__settings flex">
+                  <button id="modal-close" class="btn btn__error">
+                    Выслать повторно
+                  </button>
+                  <button id="submit" class="btn btn__secondary">
+                    Ок
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div id="modal-confirm" class="confirm__wrapper">
+            <div class="modal__confirm flex">
+              <div class="confirm__content flex column">
+                <img src={% static 'img/logo.png' %} alt="Логотип библиотеки БЧ">
+                <div class="confirm__body flex column"></div>
+              </div>
+            </div>
+          </div>
+
+
+          <div id="modal-success" class="modal__edit">
+            <div class="overlay"></div>
+            <div class="modal__wrapper">
+              <div class="modal__content flex column">
+                <div class="modal__header flex">
+                    <button id="modal-close" class="button__close">✖</button>
+                </div>
+                <div class="drawer__body modal__body">
+                  <img src={% static 'assets/success.svg' %} alt="confirm success">
+                  <h3 class="title"></h3>
+                </div>
+                <div class="drawer__footer__settings flex row">
+                  <button id="modal-close" class="btn btn__secondary">
+                    Ок
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+{#        <script id="data">#}
+        {{ reader_info|json_script:"readerInfo" }}
+        {{ reader_auth|json_script:"readerAuth" }}
+{#{"phone": "375330000000", "education": "secondary_special", "user": {"username": "vlad", "email": "kipyatkov.vladislav@krainet.by"}}#}
+{#        </script>#}
+
+        <script src="{% static 'admin/js/script.js' %}"></script>
+
+{#        <script>#}
+{#            document.addEventListener('DOMContentLoaded', function() {#}
+{#                const dataElement = document.getElementById('data');#}
+{#                console.log('Data Element Content:', dataElement.textContent);#}
+{##}
+{#                try {#}
+{#                    const data = JSON.parse(dataElement.textContent);#}
+{#                    console.log('Parsed Data:', data);#}
+{#                } catch (error) {#}
+{#                    console.error('Error parsing JSON:', error);#}
+{#                }#}
+{#            });#}
+{#        </script>#}
+    {% else %}
+    {% endif %}
+
+
+{#    <div class="col-lg-3 col-12">#}
+{#        <div id="content-related">#}
+{#            <div class="module" id="recent-actions-module">#}
+{#                {% load log %}#}
+{#                {% get_admin_log 6 as admin_log for_user user %}#}
+{#                {% if not admin_log %}#}
+{#                {% else %}#}
+{#                    <h4 class="mb-3">{% trans 'Recent actions' %}</h4>#}
+{#                    <div class="timeline">#}
+{#                        {% for entry in admin_log %}#}
+{#                            <div>#}
+{#                                {% if entry.is_change %}#}
+{#                                    <i class="fas fa-edit bg-gray text-xs"></i>#}
+{#                                {% elif entry.is_deletion %}#}
+{#                                    <i class="fas fa-trash bg-danger text-xs"></i>#}
+{#                                {% elif entry.is_addition %}#}
+{#                                    <i class="fas fa-plus-circle bg-success text-xs"></i>#}
+{#                                {% endif %}#}
+{##}
+{#                                <div class="timeline-item">#}
+{#                                    <span class="time"><i class="fas fa-clock"></i> {% blocktrans with timesince=entry.action_time|timesince %}{{ timesince }} ago{% endblocktrans %}</span>#}
+{#                                    <h3 class="timeline-header no-border">#}
+{#                                        {% if entry.is_deletion or not entry.get_admin_url %}#}
+{#                                            {{ entry.object_repr }}#}
+{#                                        {% else %}#}
+{#                                            <a href="{{ entry.get_admin_url }}">{{ entry.object_repr }}</a>#}
+{#                                        {% endif %}#}
+{##}
+{#                                        {% if entry.model %}#}
+{#                                            <span class="mini quiet">#}
+{#                                                {% filter capfirst %}#}
+{#                                                    {{ entry.model }}#}
+{#                                                {% endfilter %}#}
+{#                                            </span>#}
+{#                                        {% endif %}#}
+{#                                    </h3>#}
+{#                                    {% if not entry.is_deletion %}#}
+{#                                        <div class="timeline-body">#}
+{#                                            {% if entry.is_addition %}#}
+{#                                                {{ entry }}#}
+{#                                            {% else %}#}
+{#                                                <ul style="list-style: none; padding: 0;">#}
+{#                                                    {% action_message_to_list entry as action_message_list %}#}
+{#                                                    {% for action_message in action_message_list %}#}
+{#                                                        <li>{{ action_message.msg|style_bold_first_word }}</li>#}
+{#                                                    {% endfor %}#}
+{#                                                </ul>#}
+{#                                            {% endif %}#}
+{#                                        </div>#}
+{#                                    {% endif %}#}
+{#                                </div>#}
+{#                            </div>#}
+{#                        {% endfor %}#}
+{#                        <div>#}
+{#                            <i class="fa fa-clock bg-gray"></i>#}
+{#                        </div>#}
+{#                    </div>#}
+{#                {% endif %}#}
+{#            </div>#}
+{#        </div>#}
+{#    </div>#}
+
+{% endblock %}

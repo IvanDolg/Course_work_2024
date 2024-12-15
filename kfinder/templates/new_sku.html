@@ -1,0 +1,22 @@
+{% extends "search.html" %}
+{% load static i18n %}
+
+{% block search_form %}
+
+    <div class="container">
+        <h1>{% trans "Новые поступления" %}</h1>
+
+{#        <form method="GET" action="{% url 'boolean_search' %}">#}
+{#            <div class="search-filters">#}
+{#                <div class="form-group">#}
+{#                    <label for="page_size">{% trans "Размер страницы" %}</label>#}
+{#                    <select name="page_size" id="page_size" class="form-control">#}
+{#                        <option value="20" {% if page_size == 20 %}selected{% endif %}>20</option>#}
+{#                        <option value="50" {% if page_size == 50 %}selected{% endif %}>50</option>#}
+{#                        <option value="100" {% if page_size == 100 %}selected{% endif %}>100</option>#}
+{#                    </select>#}
+{#                </div>#}
+{#            </div>#}
+{#        </form>#}
+    </div>
+{% endblock %} 

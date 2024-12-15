@@ -1,0 +1,182 @@
+{% extends "admin/base_site.html" %}
+{% load i18n static %}
+
+{% block extrastyle %}
+    {{ block.super }}
+    <link rel="stylesheet" type="text/css" href="{% static 'admin/css/forms.css' %}">
+    <style>
+        .main-header {
+            display: none !important;
+        }
+
+        .navbar {
+            display: none !important;
+        }
+        
+        body {
+            padding: 0;
+            margin: 0;
+        }
+        
+        #content-main {
+            padding: 20px;
+        }
+        
+        /* Остальные стили остаются без изменений */
+        .topic-container {
+            display: flex;
+            flex-direction: column;
+            flex-wrap: wrap;
+            max-height: 80vh;
+            overflow-x: auto;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            padding: 10px;
+        }
+        .topic-header, .topic-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            margin-bottom: 0;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        .topic-header {
+            font-weight: bold;
+            background-color: #f5f5f5;
+            padding: 15px 0;
+            font-size: 20px;
+        }
+        .topic-header-label {
+            flex-grow: 1;
+            text-align: left;
+            padding: 15px 20px;
+            width: 80%;
+            border-right: 1px solid #e0e0e0;
+            font-size: 20px;
+        }
+        .topic-checkbox, .topic-header-action {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 20%;
+            padding: 15px;
+        }
+        .topic-label {
+            display: flex;
+            align-items: center;
+        }
+        .topic-item {
+            display: flex;
+            align-items: center;
+            height: 70px;
+        }
+        .topic-item:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        .topic-item:nth-child(odd) {
+            background-color: #ffffff;
+        }
+        .topic-item:hover {
+            background-color: #f0f0f0;
+        }
+        .topic-text {
+            padding: 10px 10px 10px 20px;;
+            font-size: 20px;
+        }
+        
+        /* Стили для поля поиска */
+        .search-container {
+            margin-bottom: 20px;
+        }
+        #topic-search {
+            width: 100%;
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+<div id="content-main">
+    <form id="topic-select-form" method="post">
+        {% csrf_token %}
+        <fieldset class="module">
+            <h2>Выберите тематики</h2>
+            <div class="search-container">
+                <input type="text" id="topic-search" placeholder="Поиск тематик...">
+            </div>
+            <div class="topic-container">
+                <div class="topic-header">
+                    <div class="topic-header-label">Название</div>
+                    <div class="topic-header-action">Действие</div>
+                </div>
+                {% for topic in topics %}
+                    <div class="topic-item" onclick="toggleCheckbox(this)">
+                        <label class="topic-label topic-text" for="topic_{{ forloop.counter }}">
+                                {{ topic }}
+                        </label>
+                        <div class="topic-checkbox">
+                            <input type="checkbox" id="topic_{{ forloop.counter }}" name="selected_topics" value="{{ topic }}" {% if topic in selected_topics %}checked{% endif %}>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </fieldset>
+        <div class="submit-row">
+            <input type="submit" value="Выбрать" class="default" name="_save">
+        </div>
+    </form>
+</div>
+
+<script type="text/javascript">
+    function toggleCheckbox(element) {
+        var checkbox = element.querySelector('input[type="checkbox"]');
+        checkbox.checked = !checkbox.checked;
+    }
+
+    document.getElementById('topic-select-form').onsubmit = function(e) {
+        e.preventDefault();
+        var selectedTopics = [];
+        var checkboxes = document.getElementsByName('selected_topics');
+        for (var i = 0; i < checkboxes.length; i++) {
+            if (checkboxes[i].checked) {
+                selectedTopics.push(checkboxes[i].value);
+            }
+        }
+        window.opener.handleSelectedTopics(selectedTopics);
+        window.close();
+    };
+
+    // Функция для фильтрации тематик
+    function filterTopics() {
+        var input, filter, topicItems, i, txtValue;
+        input = document.getElementById('topic-search');
+        filter = input.value.toUpperCase();
+        topicItems = document.getElementsByClassName('topic-item');
+
+        for (i = 0; i < topicItems.length; i++) {
+            txtValue = topicItems[i].textContent || topicItems[i].innerText;
+            if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                topicItems[i].style.display = "";
+            } else {
+                topicItems[i].style.display = "none";
+            }
+        }
+    }
+
+    // Добавляем обработчик события для поля поиска
+    document.getElementById('topic-search').addEventListener('keyup', filterTopics);
+
+    // Добавим функцию для отладки
+    function logSelectedTopics() {
+        var selectedTopics = "{{ selected_topics|safe }}".split(',');
+        console.log("Selected topics:", selectedTopics);
+    }
+
+    // Вызовем функцию при загрузке страницы
+    window.onload = logSelectedTopics;
+</script>
+{% endblock %}

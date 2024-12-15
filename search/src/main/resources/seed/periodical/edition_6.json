@@ -1,0 +1,9 @@
+{
+  "id": 6,
+  "type": "PERIODICAL",
+  "subtype": "NEWSPAPERS",
+  "database": "database 2",
+  "title": "Practical Cloud Computing",
+  "date_of_publication": "2019-01-01",
+  "note": "Practical guide to cloud computing architectures and services."
+}

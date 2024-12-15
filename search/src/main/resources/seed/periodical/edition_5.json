@@ -1,0 +1,9 @@
+{
+  "id": 5,
+  "type": "PERIODICAL",
+  "subtype": "MAGAZINES",
+  "database": "database 2",
+  "title": "Blockchain for Distributed Systems",
+  "date_of_publication": "2021-01-01",
+  "note": "Blockchain technology and its integration into distributed systems."
+}

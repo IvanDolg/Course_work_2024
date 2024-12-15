@@ -1,0 +1,9 @@
+{
+  "id": 9,
+  "type": "PERIODICAL",
+  "subtype": "NEWSPAPERS",
+  "database": "database 3",
+  "title": "Machine Learning for Healthcare",
+  "date_of_publication": "2021-01-01",
+  "note": "Machine learning applications in the healthcare industry."
+}

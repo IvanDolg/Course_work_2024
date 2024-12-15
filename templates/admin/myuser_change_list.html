@@ -1,0 +1,19 @@
+{% extends "admin/change_list.html" %}
+
+{% block object-tools %}
+    {{ block.super }}
+    <div class="object-tools">
+        <ul class="object-tools" style="display: flex; justify-content: center; width: 100%;">
+            <li style="margin-right: 20px;">
+                <a href="{% url 'register' %}" class="btn btn-primary">
+                    Добавить нового пользователя
+                </a>
+            </li>
+            <li>
+                <a href="{% url 'other_natural_person_register' %}" class="btn btn-primary">
+                    Добавить нового иного физического лица
+                </a>
+            </li>
+        </ul>
+    </div>
+{% endblock %}

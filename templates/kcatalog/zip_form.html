@@ -1,0 +1,11 @@
+    <div>
+        <h1>Форма загрузки изображений</h1>
+        <form action="." method="POST" enctype="multipart/form-data">
+            {{ form.as_p }}
+            {% csrf_token %}
+                <lablel>Кодировка названий файлов:</lablel><input type="text" name="encode" value="cp866" />
+                <br/><br/>
+                <button type="submit">Загрузить архив</button>
+        </form>
+    </div>
+    <br />

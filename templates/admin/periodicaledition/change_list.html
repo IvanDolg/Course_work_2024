@@ -1,0 +1,21 @@
+{% extends "admin/change_list.html" %}
+
+{% block content %}
+<h1>{{ title }}</h1>
+<table>
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Title</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for item in results %}
+        <tr>
+            <td>{{ item.id }}</td>
+            <td>{{ item.title }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

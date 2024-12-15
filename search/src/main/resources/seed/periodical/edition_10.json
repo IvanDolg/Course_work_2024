@@ -1,0 +1,9 @@
+{
+  "id": 10,
+  "type": "PERIODICAL",
+  "subtype": "MAGAZINES",
+  "database": "database 3",
+  "title": "Introduction to Kubernetes",
+  "date_of_publication": "2022-01-01",
+  "note": "Step-by-step guide to container orchestration with Kubernetes."
+}

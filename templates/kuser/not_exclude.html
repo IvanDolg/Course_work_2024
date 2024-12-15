@@ -1,0 +1,15 @@
+{% extends "admin/change_form.html" %}
+
+{% block submit_buttons_bottom %}
+    <div class="submit-row" style="display: flex; flex-direction: column; gap: 10px; padding-top: 15px;">
+        <input type="submit" value="Отмена исключения" class="btn btn-danger form-control"
+               formaction="{% url 'admin:back_to_reader' %}">
+    </div>
+    <div class="submit-row" style="display: flex; flex-direction: column; gap: 10px; padding-top: 15px;">
+        <button type="submit" class="btn btn-success form-control" name="_save"
+                value="Сохранить">
+            Исключить
+        </button>
+    </div>
+
+{% endblock %}

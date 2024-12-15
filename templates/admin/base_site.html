@@ -1,0 +1,75 @@
+{% extends 'admin/base_site.html' %}
+{% load static %}
+{% block extrahead %}
+{{ block.super }}
+<link rel="icon" href="{% static favicon %}" sizes="256x256"/>
+<link rel="stylesheet" type="text/css" href="{% static 'css/main.css' %}">
+{% endblock %}
+{% block extrastyle %}
+{{ block.super }}
+<style>
+    .basemod-brand {
+        display: flex;
+        align-items: center;
+    }
+
+    .basemod-logo {
+        margin-right: 1rem;
+    }
+</style>
+<script>
+    window.onload = function () {
+        function styleElement(name, style) {
+            let els = document.getElementsByClassName(name);
+            for (let el of els) {
+                el.style.display = style;
+            }
+        }
+
+        function selectServiceType() {
+            var serviceType = document.getElementById('id_service_type').value.toLowerCase();
+
+            if (serviceType === 'абонемент') {
+                styleElement('field-receive_time', 'none');
+                styleElement('field-refund_time', 'none');
+
+                styleElement('field-receive_date', 'block');
+                styleElement('field-refund_date', 'block');
+            } else if (serviceType === 'читальный зал') {
+                styleElement('field-receive_time', 'block');
+                styleElement('field-refund_time', 'block');
+
+                styleElement('field-receive_date', 'block');
+                styleElement('field-refund_date', 'none');
+            }
+        }
+
+        var id_service_type = document.getElementById('id_service_type');
+        if (id_service_type) {
+            id_service_type.onchange = selectServiceType;
+            selectServiceType();
+        }
+    };
+</script>
+{% endblock %}
+
+{% block branding %}
+<div class="basemod-brand">
+    <div class="basemod-logo">
+        <img src="{% static 'img/logo.png' %}" alt="BaseMod"
+             style="background-color: white; width: 30px; border-radius: 15px;">
+    </div>
+    <div>
+        {{ block.super }}
+    </div>
+</div>
+{% endblock %}
+
+{% block usertools %}
+{% if request.user.is_super_client %}
+<div>
+    <a href="{% url 'dbbackup' %}" target="_blank">Download db</a>
+</div>
+{% endif %}
+{{block.super}}
+{% endblock %}

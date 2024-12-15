@@ -1,0 +1,9 @@
+{
+  "id": 7,
+  "type": "PERIODICAL",
+  "subtype": "NEWSPAPERS",
+  "database": "database 2",
+  "title": "Cyber security Threat Detection",
+  "date_of_publication": "2020-01-01",
+  "note": "Modern techniques for detecting cyber security threats."
+}

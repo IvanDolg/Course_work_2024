@@ -1,0 +1,17 @@
+{% extends "admin/change_form.html" %}
+
+{% block submit_buttons_bottom %}
+    {% if original and original.id %}
+        <div class="submit-row" style="display: flex; flex-direction: column; gap: 10px; padding-top: 15px;">
+            <input type="submit" value="Печать отчета" class="btn btn-success form-control"
+                   formaction="{% url 'admin:circulation_report' object_id=original.id %}">
+        </div>
+    {% endif %}
+    <div class="submit-row" style="display: flex; flex-direction: column; gap: 10px; padding-top: 15px;">
+        <button type="submit" class="btn btn-success form-control" name="_continue"
+                value="Сохранить и продолжить редактирование">
+            Просмотреть отчёт
+        </button>
+    </div>
+
+{% endblock %}

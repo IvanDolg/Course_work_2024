@@ -1,0 +1,26 @@
+{% extends "admin/change_form.html" %}
+
+{% block submit_buttons_bottom %}
+    {% if original and original.id %}
+        <div class="submit-row" style="display: flex; flex-direction: column; gap: 10px; padding-top: 15px;">
+            <input type="submit" value="Исключить пользователя" class="btn btn-danger form-control"
+                   formaction="{% url 'admin:exclusion_admin' object_id=original.id %}?next={{ original.id }}">
+            <input type="submit" value="Перерегистрация" class="btn btn-success form-control"
+                   formaction="{% url 'admin:perereg_admin' object_id=original.id %}">
+            <input type="submit" value="Выдачи" class="btn btn-success form-control"
+                   formaction="{% url 'admin:view_circulations_admin' object_id=original.id %}">
+            <input type="submit" value="Печать данных авторизации" class="btn btn-success form-control"
+                   formaction="{% url 'admin:print_data_admin' object_id=original.id %}">
+            <input type="submit" value="Выдача" class="btn btn-success form-control"
+                   formaction="{% url 'admin:make_circ_admin' object_id=original.id %}">
+            <button type="submit" class="btn btn-success form-control" name="_save"
+                    value="Сохранить">
+                Сохранить
+            </button>
+            <button type="submit" class="btn btn-success form-control" name="_continue"
+                    value="Сохранить и продолжить редактирование">
+                Сохранить и продолжить редактирование
+            </button>
+        </div>
+    {% endif %}
+{% endblock %}

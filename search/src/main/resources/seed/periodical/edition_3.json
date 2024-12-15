@@ -1,0 +1,9 @@
+{
+  "id": 3,
+  "type": "PERIODICAL",
+  "subtype": "NEWSPAPERS",
+  "database": "database 1",
+  "title": "Data Structures and Algorithms",
+  "date_of_publication": "2020-01-01",
+  "note": "A comprehensive guide to data structures and algorithms, focusing on practical implementation."
+}
